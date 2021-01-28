@@ -2,6 +2,11 @@
 # Module on date representation
 # Only for Gregorian Calendars
 
+__author__ = 'Tousif Anaam'
+__version__ = '$Revision: 0.0 $'
+__date__ = '$Date: 2020-12-05 $'
+__source__ = "https://github.com/tousifanaam/tcalendar.git"
+
 class Tcalendar:
 
     MONTHSLIST = [
@@ -20,7 +25,6 @@ class Tcalendar:
         self.year = year
         self.month = month
         self.date = date
-        self.leapyear = self.leapyear()
 
     def leapyear(self):
         leap_year = False
@@ -29,7 +33,7 @@ class Tcalendar:
             if self.year % 100 == 0:
                 leap_year = False
                 if self.year % 400 == 0:
-                    leap_year = False
+                    leap_year = True
         return leap_year
 
     @property
@@ -40,6 +44,20 @@ class Tcalendar:
     @property
     def cald(self):
         return self.calendar(self.year, self.month)
+
+    @staticmethod
+    def maximum_days(year, month):
+        months_list = Tcalendar.MONTHSLIST
+        months_dict = Tcalendar.MONTHSDICT
+        if month >= 1 or month <=12:
+            selected_month = months_list[month-1]
+            max_d_in_m = months_dict[selected_month]
+        # for leap year:
+        if month == 2:
+            checkleapyear = Tcalendar(year, month, 2)
+            if checkleapyear.leapyear():
+                max_d_in_m = 29
+        return max_d_in_m
 
     @staticmethod
     def cal(year, month, date):
@@ -98,9 +116,10 @@ class Tcalendar:
         max_d_in_m = months_dict[selected_month]
 
         # for leap year:
-        checkleapyear = Tcalendar(year, month, 2)
-        if checkleapyear.leapyear:
-            max_d_in_m = 29
+        if month == 2:
+            checkleapyear = Tcalendar(year, month, 2)
+            if checkleapyear.leapyear():
+                max_d_in_m = 29
 
         if date < 0 or date > max_d_in_m:
             print("--- ERR. Invalid value. [date]")
@@ -179,9 +198,10 @@ class Tcalendar:
         max_d_in_m = months_dict[selected_month]
 
         # for leap year:
-        checkleapyear = cls(year, month, 2)
-        if checkleapyear.leapyear:
-            max_d_in_m = 29
+        if month == 2:
+            checkleapyear = cls(year, month, 2)
+            if checkleapyear.leapyear():
+                max_d_in_m = 29
 
         day_1 = cls.cal(year, month, 1).lower()
         start_position = days_pos[day_1]
