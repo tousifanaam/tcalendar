@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # Module on date representation
 # Only for Gregorian Calendars
+from datetime import datetime
+
 
 __author__ = 'Tousif Anaam'
 __version__ = '$Revision: 0.0 $'
@@ -248,3 +250,18 @@ class Tcalendar:
         top_part += "\n" + "\nSUN" + " MON" + " TUE" + " WED" + " THU" + " FRI" + " SAT"
         top_part += "\n" + " --  --  --  --  --  --  --\n"
         return top_part + full_calendar
+
+    @classmethod
+    def now(cls):
+        r = str(datetime.today()).split(' ')
+        _date = r[0]
+        _day = cls.cal(_date.split('-')[0], _date.split('-')[1], _date.split('-')[2])
+        _time = r[1].split('.')[0]
+        return "{0} {1} {2}".format(_date, _day, _time)
+
+    @classmethod
+    def today(cls):
+        r = str(datetime.today()).split(' ')
+        _date = r[0]
+        _day = cls.cal(_date.split('-')[0], _date.split('-')[1], _date.split('-')[2])
+        return "{0} {1}".format(_date, _day)
