@@ -161,10 +161,16 @@ class Tcalendar:
         return week_day.title()
 
     @classmethod
-    def calendar(cls, year, month):
+    def calendar(cls, year = None, month = None):
         """
         returns the calendar page of any valid month and year pair
         """
+
+        if year == None:
+            year = int(cls.today().split(' ')[0].split('-')[0])
+        if month == None:
+            month = int(cls.today().split(' ')[0].split('-')[1])
+
         months_list = cls.MONTHSLIST
         months_dict = cls.MONTHSDICT
 
@@ -265,3 +271,7 @@ class Tcalendar:
         _date = r[0]
         _day = cls.cal(_date.split('-')[0], _date.split('-')[1], _date.split('-')[2])
         return "{0} {1}".format(_date, _day)
+
+if __name__ == "__main__":
+    print(Tcalendar.now())
+    print(Tcalendar.today())
