@@ -29,10 +29,14 @@ class Tcalendar:
         'tuesday', 'wednesday', 'thursday',
         'friday', ]
 
-    def __init__(self, year, month, date=None):
+    def __init__(self, year: int, month: int, date: int):
         self.year = year
         self.month = month
         self.date = date
+
+    def __str__(self):
+        def f(n: int) -> str: return str(n) if n >= 10 else "0" + str(n)
+        return "{0}-{1}-{2} {3}".format(self.year, f(self.month), f(int(self.date)), self.day)
 
     def leapyear(self):
         leap_year = False
@@ -315,6 +319,41 @@ class Tcalendar:
             if int(tm) == 1 and nm == 12:
                 ny = ny - 1
             return "{0}-{1}-{2} {3}".format(f(ny), f(nm), f(nd), nw)
+
+    def nextday(self):
+        ty, tm, td = self.year, self.month, self.date
+        ny, nm, nd = int(ty), int(tm), int(td)
+        if int(td) < self.maximum_days(int(ty), int(tm)):
+            return Tcalendar(ny, nm, nd + 1)
+        elif int(td) == self.maximum_days(int(ty), int(tm)):
+            nm = nm + 1 if nm + 1 <= 12 else 1
+            if nm == 1:
+                ny += 1
+            return Tcalendar(ny, nm, 1)
+
+    def prevday(self):
+        ty, tm, td = self.year, self.month, self.date
+        ny, nm, nd = int(ty), int(tm), int(td)
+        if int(td) > 1:
+            return Tcalendar(ny, nm, nd - 1)
+        elif int(td) == 1:
+            nm = nm - 1 if nm - 1 > 0 else 12
+            nd = self.maximum_days(int(ty), nm)
+            if int(tm) == 1 and nm == 12:
+                ny = ny - 1
+            return Tcalendar(ny, nm, nd)
+
+    def __add__(self, other: int):
+        foo = self
+        for _ in range(other):
+            foo = foo.nextday()
+        return foo
+
+    def __sub__(self, other: int):
+        foo = self
+        for _ in range(other):
+            foo = foo.prevday()
+        return foo
 
 
 if __name__ == "__main__":
