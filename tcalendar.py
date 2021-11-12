@@ -9,6 +9,7 @@ __version__ = '$Revision: 0.0 $'
 __date__ = '$Date: 2020-12-05 $'
 __source__ = "https://github.com/tousifanaam/tcalendar.git"
 
+
 class Tcalendar:
 
     MONTHSLIST = [
@@ -18,10 +19,15 @@ class Tcalendar:
         'october', 'november', 'december']
 
     MONTHSDICT = {
-        'january': 31, 'february': 28, 'march': 31, 
-        'april': 30, 'may': 31, 'june': 30, 'july': 31, 
-        'august': 31, 'september': 30, 'october': 31, 
-        'november': 30, 'december': 31,}
+        'january': 31, 'february': 28, 'march': 31,
+        'april': 30, 'may': 31, 'june': 30, 'july': 31,
+        'august': 31, 'september': 30, 'october': 31,
+        'november': 30, 'december': 31, }
+
+    DAYS = [
+        'saturday', 'sunday', 'monday',
+        'tuesday', 'wednesday', 'thursday',
+        'friday', ]
 
     def __init__(self, year, month, date=None):
         self.year = year
@@ -51,7 +57,7 @@ class Tcalendar:
     def maximum_days(year, month):
         months_list = Tcalendar.MONTHSLIST
         months_dict = Tcalendar.MONTHSDICT
-        if month >= 1 or month <=12:
+        if month >= 1 or month <= 12:
             selected_month = months_list[month-1]
             max_d_in_m = months_dict[selected_month]
         # for leap year:
@@ -72,13 +78,13 @@ class Tcalendar:
         months_dict = Tcalendar.MONTHSDICT
 
         str_base_10_numbers = [
-            '0', '1', '2', '3', '4', 
-            '5', '6', '7', '8', '9',]
+            '0', '1', '2', '3', '4',
+            '5', '6', '7', '8', '9', ]
 
         days_list = [
-            'saturday', 'sunday', 'monday', 
-            'tuesday', 'wednesday', 'thursday', 
-            'friday',]
+            'saturday', 'sunday', 'monday',
+            'tuesday', 'wednesday', 'thursday',
+            'friday', ]
 
         # input variable type(s) all string or all int
         # too lazy to itterate each condition
@@ -154,14 +160,15 @@ class Tcalendar:
         operation_2 = int(y/4)
         operation_3 = int(y/100)
         operation_4 = int(y/400)
-        operation_5 = d + 2 * m + operation_1 + y + operation_2 - operation_3 + operation_4 + 2
-        operation_6 = operation_5 % 7 
-            
+        operation_5 = d + 2 * m + operation_1 + y + \
+            operation_2 - operation_3 + operation_4 + 2
+        operation_6 = operation_5 % 7
+
         week_day = days_list[operation_6]
         return week_day.title()
 
     @classmethod
-    def calendar(cls, year = None, month = None):
+    def calendar(cls, year=None, month=None):
         """
         returns the calendar page of any valid month and year pair
         """
@@ -196,8 +203,8 @@ class Tcalendar:
 
         days_pos = {
             'sunday': 1, 'monday': 2, 'tuesday': 3,
-            'wednesday': 4, 'thursday': 5, 'friday': 6, 
-            'saturday': 7,}
+            'wednesday': 4, 'thursday': 5, 'friday': 6,
+            'saturday': 7, }
 
         full_calendar = ""
 
@@ -216,7 +223,7 @@ class Tcalendar:
 
         # 1st line of dates
         current_value = 1
-        for i in range(1,8):
+        for i in range(1, 8):
             if i == 1 and i < start_position:
                 full_calendar += "     "
             elif i < start_position:
@@ -234,7 +241,7 @@ class Tcalendar:
         # further lines
         full_calendar += "\n"
         while current_value <= max_d_in_m:
-            for i in range(1,8):
+            for i in range(1, 8):
                 if current_value > max_d_in_m:
                     break
                 if i == 1:
@@ -242,7 +249,7 @@ class Tcalendar:
                 if current_value < 10:
                     full_calendar += "0" + str(current_value)
                     full_calendar += "  "
-                    current_value += 1  
+                    current_value += 1
                 else:
                     full_calendar += str(current_value)
                     full_calendar += "  "
@@ -261,7 +268,8 @@ class Tcalendar:
     def now(cls):
         r = str(datetime.today()).split(' ')
         _date = r[0]
-        _day = cls.cal(_date.split('-')[0], _date.split('-')[1], _date.split('-')[2])
+        _day = cls.cal(_date.split(
+            '-')[0], _date.split('-')[1], _date.split('-')[2])
         _time = r[1].split('.')[0]
         return "{0} {1} {2}".format(_date, _day, _time)
 
@@ -269,9 +277,46 @@ class Tcalendar:
     def today(cls):
         r = str(datetime.today()).split(' ')
         _date = r[0]
-        _day = cls.cal(_date.split('-')[0], _date.split('-')[1], _date.split('-')[2])
+        _day = cls.cal(_date.split(
+            '-')[0], _date.split('-')[1], _date.split('-')[2])
         return "{0} {1}".format(_date, _day)
 
+    @classmethod
+    def tomorrow(cls):
+        ty, tm, td, tw = cls.today().split(' ')[0].split(
+            '-') + [cls.today().split(' ')[1]]
+        ny, nm, nd, nw = int(ty), int(tm), int(td), tw
+        def f(n: int) -> str: return str(n) if n >= 10 else "0" + str(n)
+        try:
+            nw = cls.DAYS[cls.DAYS.index(tw.lower()) + 1].title()
+        except IndexError:
+            nw = "Saturday"
+        if int(td) < cls.maximum_days(int(ty), int(tm)):
+            return "{0}-{1}-{2} {3}".format(f(ny), f(nm), f(nd + 1), nw)
+        elif int(td) == cls.maximum_days(int(ty), int(tm)):
+            nm = nm + 1 if nm + 1 <= 12 else 1
+            if nm == 1:
+                ny += 1
+            return "{0}-{1}-{2} {3}".format(ny, f(nm), "01", nw)
+
+    @classmethod
+    def yesterday(cls):
+        cls = Tcalendar
+        ty, tm, td, tw = cls.today().split(' ')[0].split(
+            '-') + [cls.today().split(' ')[1]]
+        ny, nm, nd, nw = int(ty), int(tm), int(td), tw
+        def f(n: int) -> str: return str(n) if n >= 10 else "0" + str(n)
+        nw = cls.DAYS[cls.DAYS.index(tw.lower()) - 1].title()
+        if int(td) > 1:
+            return "{0}-{1}-{2} {3}".format(f(ny), f(nm), f(nd - 1), nw)
+        elif int(td) == 1:
+            nm = nm - 1 if nm - 1 > 0 else 12
+            nd = cls.maximum_days(int(ty), nm)
+            if int(tm) == 1 and nm == 12:
+                ny = ny - 1
+            return "{0}-{1}-{2} {3}".format(f(ny), f(nm), f(nd), nw)
+
+
 if __name__ == "__main__":
-    print(Tcalendar.now())
-    print(Tcalendar.today())
+
+    pass
