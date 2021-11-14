@@ -38,6 +38,9 @@ class Tcalendar:
         def f(n: int) -> str: return str(n) if n >= 10 else "0" + str(n)
         return "{0}-{1}-{2} {3}".format(self.year, f(self.month), f(int(self.date)), self.day)
 
+    def __repr__(self):
+        return "Tcalendar({0}, {1}, {2})".format(self.year, self.month, self.date)
+
     def leapyear(self):
         leap_year = False
         if self.year % 4 == 0:
@@ -354,6 +357,19 @@ class Tcalendar:
         for _ in range(other):
             foo = foo.prevday()
         return foo
+
+    def __eq__(self, o: object) -> bool:
+        return self.year == o.year and self.month == o.month and self.date == o.date
+
+    def __gt__(self, o: object) -> bool:
+        if self.year != o.year:
+            return self.year > o.year
+        elif self.month != o.month:
+            return self.month > o.month
+        elif self.date != o.date:
+            return self.date > o.date
+        else:
+            return False
 
 
 if __name__ == "__main__":
