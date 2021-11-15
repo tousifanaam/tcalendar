@@ -288,42 +288,7 @@ class Tcalendar:
             '-')[0], _date.split('-')[1], _date.split('-')[2])
         return "{0} {1}".format(_date, _day)
 
-    @classmethod
-    def tomorrow(cls):
-        ty, tm, td, tw = cls.today().split(' ')[0].split(
-            '-') + [cls.today().split(' ')[1]]
-        ny, nm, nd, nw = int(ty), int(tm), int(td), tw
-        def f(n: int) -> str: return str(n) if n >= 10 else "0" + str(n)
-        try:
-            nw = cls.DAYS[cls.DAYS.index(tw.lower()) + 1].title()
-        except IndexError:
-            nw = "Saturday"
-        if int(td) < cls.maximum_days(int(ty), int(tm)):
-            return "{0}-{1}-{2} {3}".format(f(ny), f(nm), f(nd + 1), nw)
-        elif int(td) == cls.maximum_days(int(ty), int(tm)):
-            nm = nm + 1 if nm + 1 <= 12 else 1
-            if nm == 1:
-                ny += 1
-            return "{0}-{1}-{2} {3}".format(ny, f(nm), "01", nw)
-
-    @classmethod
-    def yesterday(cls):
-        cls = Tcalendar
-        ty, tm, td, tw = cls.today().split(' ')[0].split(
-            '-') + [cls.today().split(' ')[1]]
-        ny, nm, nd, nw = int(ty), int(tm), int(td), tw
-        def f(n: int) -> str: return str(n) if n >= 10 else "0" + str(n)
-        nw = cls.DAYS[cls.DAYS.index(tw.lower()) - 1].title()
-        if int(td) > 1:
-            return "{0}-{1}-{2} {3}".format(f(ny), f(nm), f(nd - 1), nw)
-        elif int(td) == 1:
-            nm = nm - 1 if nm - 1 > 0 else 12
-            nd = cls.maximum_days(int(ty), nm)
-            if int(tm) == 1 and nm == 12:
-                ny = ny - 1
-            return "{0}-{1}-{2} {3}".format(f(ny), f(nm), f(nd), nw)
-
-    def nextday(self):
+    def nextday(self) -> object:
         ty, tm, td = self.year, self.month, self.date
         ny, nm, nd = int(ty), int(tm), int(td)
         if int(td) < self.maximum_days(int(ty), int(tm)):
@@ -334,7 +299,7 @@ class Tcalendar:
                 ny += 1
             return Tcalendar(ny, nm, 1)
 
-    def prevday(self):
+    def prevday(self) -> object:
         ty, tm, td = self.year, self.month, self.date
         ny, nm, nd = int(ty), int(tm), int(td)
         if int(td) > 1:
@@ -345,6 +310,17 @@ class Tcalendar:
             if int(tm) == 1 and nm == 12:
                 ny = ny - 1
             return Tcalendar(ny, nm, nd)
+
+    @classmethod
+    def tomorrow(cls) -> str:
+        ty, tm, td = cls.today().split(' ')[0].split('-')
+        return str(Tcalendar(int(ty), int(tm), int(td)).nextday())
+
+    @classmethod
+    def yesterday(cls) -> str:
+        cls = Tcalendar
+        ty, tm, td = cls.today().split(' ')[0].split('-')
+        return str(Tcalendar(int(ty), int(tm), int(td)).prevday())
 
     def __add__(self, other: int):
         foo = self
@@ -374,4 +350,6 @@ class Tcalendar:
 
 if __name__ == "__main__":
 
-    pass
+    print(Tcalendar.yesterday())
+    print(Tcalendar.today())
+    print(Tcalendar.tomorrow())
