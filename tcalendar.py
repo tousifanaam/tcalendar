@@ -29,10 +29,63 @@ class Tcalendar:
         'tuesday', 'wednesday', 'thursday',
         'friday', ]
 
+    class _ArgCheck:
+
+        null = object()
+
+        def __init__(self, year, month, day, monthslist: list) -> None:
+
+            self.MONTHSLIST = monthslist
+
+            if len([i for i in [year, month, day] if not isinstance(i, str) and not isinstance(i, int)]) != 0:
+                raise TypeError("ERR. invalid argument type(s).")
+
+            # year
+            try:
+                year = int(year)
+            except ValueError:
+                raise ValueError(
+                    "ERR. {0} - invalid year!".format(year)) from None
+            if year < 0:
+                raise ValueError(
+                    "ERR. {0} - invalid year selected!".format(year))
+            self.year = year
+
+            # month
+            try:
+                month = int(month)
+            except ValueError:
+                if month.lower() in self.MONTHSLIST:
+                    month = self.MONTHSLIST.index(month.lower()) + 1
+                elif month.lower()[:3] in (foo := [i.lower()[:3] for i in self.MONTHSLIST]):
+                    month = foo.index(month.lower()[:3]) + 1
+                else:
+                    raise ValueError(
+                        "ERR. {0} - invalid month selected!".format(month))
+            if month < 0 or month > 12:
+                raise ValueError(
+                    "ERR. {0} - invalid month selected!".format(month))
+            self.month = month
+
+            # day
+            try:
+                day = int(day)
+            except ValueError:
+                raise ValueError(
+                    "ERR. {0} - invalid day!".format(day)) from None
+            if day < 0:
+                raise ValueError(
+                    "ERR. {0} - invalid day selected!".format(day))
+            self.day = day
+
+        def __str__(self):
+            return "Year: {0} Month: {1} Day: {2}".format(self.year, self.month, self.day)
+
     def __init__(self, year: int, month: int, date: int):
-        self.year = year
-        self.month = month
-        self.date = date
+        foo = self._ArgCheck(year, month, date, self.MONTHSLIST)
+        self.year = foo.year
+        self.month = foo.month
+        self.date = foo.day
 
     def __str__(self):
         def f(n: int) -> str: return str(n) if n >= 10 else "0" + str(n)
@@ -350,6 +403,9 @@ class Tcalendar:
 
 if __name__ == "__main__":
 
-    print(Tcalendar.yesterday())
-    print(Tcalendar.today())
-    print(Tcalendar.tomorrow())
+    # print(Tcalendar.yesterday())
+    # print(Tcalendar.today())
+    # print(Tcalendar.tomorrow())
+    # print(Tcalendar(2021, 12, 25).cald)
+
+    print(Tcalendar("2021", "feB", 9))
