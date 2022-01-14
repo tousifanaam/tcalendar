@@ -5,6 +5,15 @@ class UnderDevError(Exception):
     """Under development error"""
     pass
 
+class NotGregorianError(Exception):
+    """
+    'The Gregorian calendar is the calendar used in most of the world. 
+    It was introduced in October 1582 by Pope Gregory XIII as a modification of, 
+    and replacement for, the Julian calendar.' - source Wikipedia
+    """
+    pass
+
+
 class Tcalendar:
 
     MONTHSLIST = [
@@ -62,6 +71,10 @@ class Tcalendar:
                     "ERR. '{0}' - invalid date selected!".format(day))
             self.day = day
 
+            if (self.year == 1582 and self.month < 10) or self.year < 1582:
+                raise NotGregorianError(
+                    "The given date does not exist on the Gregorian calender.")
+
     def __init__(self, year, month, date):
         """
         initializing the attributes
@@ -75,7 +88,7 @@ class Tcalendar:
             raise self.date
 
     def __str__(self) -> str:
-        def foo(n: int) -> str: return str(n) if n >= 10 else "0" + str(n)
+        foo = lambda n: str(n) if n >= 10 else "0" + str(n)
         return "{0}-{1}-{2} {3}".format(foo(self.year), foo(self.month), foo(self.date), self.day())
 
     def __repr__(self) -> str:
@@ -111,7 +124,8 @@ class Tcalendar:
         # for january and february m is 13 and 14 respectively
         m = (12 + self.month) if self.month == 1 or self.month == 2 else self.month
         d = self.date
-        day_index = (d + (2 * m) + ((3 * (m + 1)) // 5) + y + (y // 4) - (y // 100) + (y // 400) + 2) % 7
+        day_index = (d + (2 * m) + ((3 * (m + 1)) // 5) + y +
+                     (y // 4) - (y // 100) + (y // 400) + 2) % 7
         if return_int:
             return day_index
         return ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', ][day_index].title()
@@ -122,7 +136,8 @@ class Tcalendar:
         """
         n = Tcalendar(self.year, self.month, 1).day(return_int=True)
         n = n - 1 if n != 0 else 6
-        foo = ["  " for _ in range(n)] + ["0{0}".format(i + 1)[-2:] for i in range(self.max_days())]
+        foo = ["  " for _ in range(
+            n)] + ["0{0}".format(i + 1)[-2:] for i in range(self.max_days())]
         bar = [foo[i: i+7] for i in range(0, len(foo), 7)]
         top_part = "\t" + self.MONTHSLIST[self.month - 1].title() + " " + str(self.year) + \
             "\n\nSUN MON TUE WED THU FRI SAT\n --  --  --  --  --  --  --\n "
@@ -150,7 +165,7 @@ class Tcalendar:
         """
         y, m, d = self.year, self.month, self.date
         if d > 1:
-            d -= 1     
+            d -= 1
         elif d == 1:
             m = m - 1 if m - 1 > 0 else 12
             d = Tcalendar(y, m, 1).max_days()
@@ -159,7 +174,7 @@ class Tcalendar:
         return Tcalendar(y, m, d)
 
     @classmethod
-    def today(cls): 
+    def today(cls):
         i = str(datetime.today()).split(' ')[0].split('-')
         return cls(i[0], i[1], i[2])
 
@@ -184,3 +199,4 @@ class Tcalendar:
             return foo
         if isinstance(other, Tcalendar):
             raise UnderDevError("Still working ...")
+print(Tcalendar(1582, "nov", 1))
