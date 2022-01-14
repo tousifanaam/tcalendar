@@ -179,6 +179,14 @@ class Tcalendar:
         i = str(datetime.today()).split(' ')[0].split('-')
         return cls(i[0], i[1], i[2])
 
+    @classmethod
+    def yesterday(cls):
+        return cls.today() - 1
+
+    @classmethod
+    def tomorrow(cls):
+        return cls.today() + 1
+
     def __add__(self, other):
         if isinstance(other, int):
             if other < 0:
