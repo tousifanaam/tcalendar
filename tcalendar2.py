@@ -5,6 +5,7 @@ class UnderDevError(Exception):
     """Under development error"""
     pass
 
+
 class NotGregorianError(Exception):
     """
     'The Gregorian calendar is the calendar used in most of the world. 
@@ -88,7 +89,7 @@ class Tcalendar:
             raise self.date
 
     def __str__(self) -> str:
-        foo = lambda n: str(n) if n >= 10 else "0" + str(n)
+        def foo(n): return str(n) if n >= 10 else "0" + str(n)
         return "{0}-{1}-{2} {3}".format(foo(self.year), foo(self.month), foo(self.date), self.day())
 
     def __repr__(self) -> str:
@@ -199,4 +200,3 @@ class Tcalendar:
             return foo
         if isinstance(other, Tcalendar):
             raise UnderDevError("Still working ...")
-print(Tcalendar(1582, "nov", 1))
