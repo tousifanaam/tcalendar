@@ -74,7 +74,7 @@ class Tcalendar:
 
             if (self.year == 1582 and self.month < 10) or self.year < 1582:
                 raise NotGregorianError(
-                    "The given date does not exist on the Gregorian calender.")
+                    "The given date does not exist on the Gregorian calender. [year: {}, month: {}]".format(self.year, self.month))
 
     def __init__(self, year, month, date):
         """
@@ -208,3 +208,43 @@ class Tcalendar:
             return foo
         if isinstance(other, Tcalendar):
             raise UnderDevError("Still working ...")
+
+    def __eq__(self, _o: object):
+        return (self.year, self.month, self.date) == (_o.year, _o.month, _o.date)
+
+    def __gt__(self, _o: object):
+        if self.year != _o.year:
+            return self.year > _o.year
+        elif self.month != _o.month:
+            return self.month > _o.month
+        elif self.date != _o.date:
+            return self.date > _o.date
+        else:
+            return False
+
+    def __lt__(self, _o: object):
+        if self.year != _o.year:
+            return self.year < _o.year
+        elif self.month != _o.month:
+            return self.month < _o.month
+        elif self.date != _o.date:
+            return self.date < _o.date
+        else:
+            return False
+
+    @staticmethod
+    def gen(a, b):
+        if a < b:
+            while True:
+                yield a
+                if (a := a.nextday()) == b:
+                    break
+        elif b < a:
+            while True:
+                yield a
+                if (a := a.prevday()) == b:
+                    break
+
+    @classmethod
+    def range(cls, t1, t2) -> list:
+        return [i for i in cls.gen(t1, t2)]
