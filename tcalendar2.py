@@ -80,13 +80,17 @@ class Tcalendar:
         """
         initializing the attributes
         """
+        if type(escape) != bool:
+            raise TypeError("ERR. '{0}' - invalid arg type for escape given!".format(escape))
+        else:
+            self.escape = escape
         if isinstance(escape_values, tuple) and len(escape_values) == 3 and len(set([type(i) for i in escape_values])) == 1 and len([i for i in escape_values if type(i) == int]) == 3:
-            self._escape = escape_values
+            self._escape_values= escape_values
         else:
             raise ValueError(
                 "ERR. '{0}' - invalid escape_values selected!".format(escape_values))
-        if (year, month, date) == self._escape and escape:
-            self.year, self.month, self.date = self._escape
+        if (year, month, date) == self._escape_values and self.escape:
+            self.year, self.month, self.date = self._escape_values
         else:
             foo = self._ArgCheck(year, month, date, self.MONTHSLIST)
             self.year = foo.year
@@ -256,3 +260,4 @@ class Tcalendar:
     @classmethod
     def range(cls, t1, t2) -> list:
         return [i for i in cls.gen(t1, t2)]
+        
