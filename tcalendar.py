@@ -408,4 +408,4 @@ if __name__ == "__main__":
     # print(Tcalendar.tomorrow())
     # print(Tcalendar(2021, 12, 25).cald)
 
-    print(Tcalendar("2021", "feB", 9))
+    print(Tcalendar.now())
