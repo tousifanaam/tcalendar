@@ -76,17 +76,25 @@ class Tcalendar:
                 raise NotGregorianError(
                     "The given date does not exist on the Gregorian calender. [year: {}, month: {}]".format(self.year, self.month))
 
-    def __init__(self, year, month, date):
+    def __init__(self, year, month, date, escape_values=(0, 0, 0), escape=False):
         """
         initializing the attributes
         """
-        foo = self._ArgCheck(year, month, date, self.MONTHSLIST)
-        self.year = foo.year
-        self.month = foo.month
-        self.date = foo.day if foo.day <= self.max_days() else ValueError(
-            "ERR. '{0}' - invalid date selected!".format(foo.day))
-        if isinstance(self.date, Exception):
-            raise self.date
+        if isinstance(escape_values, tuple) and len(escape_values) == 3 and len(set([type(i) for i in escape_values])) == 1 and len([i for i in escape_values if type(i) == int]) == 3:
+            self._escape = escape_values
+        else:
+            raise ValueError(
+                "ERR. '{0}' - invalid escape_values selected!".format(escape_values))
+        if (year, month, date) == self._escape and escape:
+            self.year, self.month, self.date = self._escape
+        else:
+            foo = self._ArgCheck(year, month, date, self.MONTHSLIST)
+            self.year = foo.year
+            self.month = foo.month
+            self.date = foo.day if foo.day <= self.max_days() else ValueError(
+                "ERR. '{0}' - invalid date selected!".format(foo.day))
+            if isinstance(self.date, Exception):
+                raise self.date
 
     def __str__(self) -> str:
         def foo(n): return str(n) if n >= 10 else "0" + str(n)
