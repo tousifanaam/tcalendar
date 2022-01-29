@@ -260,4 +260,3 @@ class Tcalendar:
     @classmethod
     def range(cls, t1, t2) -> list:
         return [i for i in cls.gen(t1, t2)]
-        
