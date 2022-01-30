@@ -111,6 +111,7 @@ class Tcalendar:
         """
         find a year is leapyear or not
         """
+        if self.escape: return
         if self.year % 4 == 0 and self.year % 100 != 0:
             return True
         return self.year % 4 == 0 and self.year % 100 == 0 and self.year % 400 == 0
@@ -119,6 +120,7 @@ class Tcalendar:
         """
         find max days in a month
         """
+        if self.escape: return
         if self.leapyear() and self.month == 2:
             return 29
         return [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][self.month - 1]
@@ -127,6 +129,7 @@ class Tcalendar:
         """
         find week day of a particular date
         """
+        if self.escape: return
         # to find the day of any date
         # formula: D = d + 2m + [3(m+1)/5] + y + [y/4] - [y/100] + [y/400] + 2
         # the values in [] means to drop the remainder and use only the int part
@@ -147,6 +150,7 @@ class Tcalendar:
         """
         returns the calendar page of any valid month and year pair
         """
+        if self.escape: return
         n = Tcalendar(self.year, self.month, 1).day(return_int=True)
         n = n - 1 if n != 0 else 6
         foo = ["  " for _ in range(
@@ -161,6 +165,7 @@ class Tcalendar:
         """
         returns a Tcalender object with one day incremented
         """
+        if self.escape: return
         y, m, d = self.year, self.month, self.date
         if self.date == self.max_days() and self.month == 12:
             y += 1
@@ -176,6 +181,7 @@ class Tcalendar:
         """
         returns a Tcalender object with one day decremented
         """
+        if self.escape: return
         y, m, d = self.year, self.month, self.date
         if d > 1:
             d -= 1
