@@ -116,6 +116,9 @@ class Tcalendar:
             return True
         return self.year % 4 == 0 and self.year % 100 == 0 and self.year % 400 == 0
 
+    def month_name(self) -> str:
+        return self.MONTHSLIST[self.month - 1].title()
+
     def max_days(self) -> int:
         """
         find max days in a month
