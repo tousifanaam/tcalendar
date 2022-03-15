@@ -1,5 +1,5 @@
 from os import system, name
-from tcalendar import Tcalendar
+from tcalendar_old import Tcalendar
 
 if name != "posix":
     raise RuntimeError("This OS is not supported.")
