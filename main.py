@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from tcalendar import Tcalendar as tc
+from tcalendar_old import Tcalendar as tc
 
 def main():
 	"""Testing the tclaendar module."""
