@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-class UnderDevError(Exception):
+class UnderDevError(NotImplementedError):
     """Under development error"""
     pass
 
@@ -16,6 +16,8 @@ class NotGregorianError(Exception):
 
 
 class Tcalendar:
+
+    __slots__ = ("year", "month", "date", "__dict__")
 
     MONTHSLIST = [
         'january', 'february', 'march',
@@ -107,6 +109,9 @@ class Tcalendar:
     def __repr__(self) -> str:
         return "Tcalendar({0}, {1}, {2})".format(self.year, self.month, self.date)
 
+    def __hash__(self) -> int:
+        return hash((self.year, self.month, self.date))
+
     def leapyear(self) -> bool:
         """
         find a year is leapyear or not
@@ -117,6 +122,7 @@ class Tcalendar:
         return self.year % 4 == 0 and self.year % 100 == 0 and self.year % 400 == 0
 
     def month_name(self) -> str:
+        if self.escape: return
         return self.MONTHSLIST[self.month - 1].title()
 
     def maxdays(self) -> int:
@@ -124,9 +130,7 @@ class Tcalendar:
         find max days in a month
         """
         if self.escape: return
-        if self.leapyear() and self.month == 2:
-            return 29
-        return [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][self.month - 1]
+        return 29 if self.leapyear() and self.month == 2 else [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][self.month - 1]
 
     def day(self, return_int: bool = False) -> str or int:
         """
@@ -208,26 +212,26 @@ class Tcalendar:
     def tomorrow(cls):
         return cls.today() + 1
 
-    def __add__(self, other):
-        if isinstance(other, int):
-            if other < 0:
-                return self - (-1 * other)
+    def __add__(self, _o):
+        if isinstance(_o, int):
+            if _o < 0:
+                return self - (-1 * _o)
             foo = self
-            for _ in range(other):
+            for _ in range(_o):
                 foo = foo.nextday()
             return foo
-        if isinstance(other, Tcalendar):
+        if isinstance(_o, Tcalendar):
             raise UnderDevError("Still working ...")
 
-    def __sub__(self, other):
-        if isinstance(other, int):
-            if other < 0:
-                return self + (-1 * other)
+    def __sub__(self, _o):
+        if isinstance(_o, int):
+            if _o < 0:
+                return self + (-1 * _o)
             foo = self
-            for _ in range(other):
+            for _ in range(_o):
                 foo = foo.prevday()
             return foo
-        if isinstance(other, Tcalendar):
+        if isinstance(_o, Tcalendar):
             raise UnderDevError("Still working ...")
 
     def __eq__(self, _o: object):
@@ -274,3 +278,7 @@ class Tcalendar:
     def now():
         """now() -> Tuple(hour: int, minute: int, second: int)"""
         return tuple(map(lambda x: int(x), str(datetime.today()).split(' ')[1].split('.')[0].split(":")))
+
+    @classmethod
+    def maxdays_in_month(cls, y, m):
+        return cls(y, m, 1).maxdays()
