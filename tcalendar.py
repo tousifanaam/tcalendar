@@ -83,11 +83,12 @@ class Tcalendar:
         initializing the attributes
         """
         if type(escape) != bool:
-            raise TypeError("ERR. '{0}' - invalid arg type for escape given!".format(escape))
+            raise TypeError(
+                "ERR. '{0}' - invalid arg type for escape given!".format(escape))
         else:
             self.escape = escape
         if isinstance(escape_values, tuple) and len(escape_values) == 3 and len(set([type(i) for i in escape_values])) == 1 and len([i for i in escape_values if type(i) == int]) == 3:
-            self._escape_values= escape_values
+            self._escape_values = escape_values
         else:
             raise ValueError(
                 "ERR. '{0}' - invalid escape_values selected!".format(escape_values))
@@ -116,27 +117,31 @@ class Tcalendar:
         """
         find a year is leapyear or not
         """
-        if self.escape: return
+        if self.escape:
+            return
         if self.year % 4 == 0 and self.year % 100 != 0:
             return True
         return self.year % 4 == 0 and self.year % 100 == 0 and self.year % 400 == 0
 
     def month_name(self) -> str:
-        if self.escape: return
+        if self.escape:
+            return
         return self.MONTHSLIST[self.month - 1].title()
 
     def maxdays(self) -> int:
         """
         find max days in a month
         """
-        if self.escape: return
+        if self.escape:
+            return
         return 29 if self.leapyear() and self.month == 2 else [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][self.month - 1]
 
     def day(self, return_int: bool = False) -> str or int:
         """
         find week day of a particular date
         """
-        if self.escape: return
+        if self.escape:
+            return
         # to find the day of any date
         # formula: D = d + 2m + [3(m+1)/5] + y + [y/4] - [y/100] + [y/400] + 2
         # the values in [] means to drop the remainder and use only the int part
@@ -157,7 +162,8 @@ class Tcalendar:
         """
         returns the calendar page of any valid month and year pair
         """
-        if self.escape: return
+        if self.escape:
+            return
         n = Tcalendar(self.year, self.month, 1).day(return_int=True)
         n = n - 1 if n != 0 else 6
         foo = ["  " for _ in range(
@@ -172,7 +178,8 @@ class Tcalendar:
         """
         returns a Tcalender object with one day incremented
         """
-        if self.escape: return
+        if self.escape:
+            return
         y, m, d = self.year, self.month, self.date
         if self.date == self.maxdays() and self.month == 12:
             y += 1
@@ -188,7 +195,8 @@ class Tcalendar:
         """
         returns a Tcalender object with one day decremented
         """
-        if self.escape: return
+        if self.escape:
+            return
         y, m, d = self.year, self.month, self.date
         if d > 1:
             d -= 1
@@ -272,6 +280,7 @@ class Tcalendar:
 
     @classmethod
     def range(cls, t1, t2) -> list:
+        """returns [t1: Tcalendar ... t2: Tcalendar]"""
         return [i for i in cls.gen(t1, t2)]
 
     @staticmethod
@@ -280,5 +289,19 @@ class Tcalendar:
         return tuple(map(lambda x: int(x), str(datetime.today()).split(' ')[1].split('.')[0].split(":")))
 
     @classmethod
-    def maxdays_in_month(cls, y, m):
+    def maxdays_in_month(cls, y, m) -> int:
         return cls(y, m, 1).maxdays()
+
+    @classmethod
+    def fullmonth(cls, m, *, leapyear: bool = False):
+        res = [(foo := cls(2000 if leapyear else 2001, m, 1))]
+        for _ in range(foo.maxdays() - 1):
+            res.append((foo := foo.nextday()))
+        return res
+
+    @classmethod
+    def fullyear(cls, y):
+        res = [(foo := cls(y, 1, 1))]
+        for _ in range((366 if foo.leapyear() else 365) - 1):
+            res.append((foo := foo.nextday()))
+        return res
