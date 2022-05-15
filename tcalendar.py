@@ -305,3 +305,7 @@ class Tcalendar:
         for _ in range((366 if foo.leapyear() else 365) - 1):
             res.append((foo := foo.nextday()))
         return res
+
+    @classmethod
+    def calendar(cls, y, m) -> str:
+        return cls(y, m, 1).cald()
