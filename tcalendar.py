@@ -119,9 +119,7 @@ class Tcalendar:
         """
         if self.escape:
             return
-        if self.year % 4 == 0 and self.year % 100 != 0:
-            return True
-        return self.year % 4 == 0 and self.year % 100 == 0 and self.year % 400 == 0
+        return (self.year % 4 == 0 and self.year % 100 != 0) or (self.year % 4 == 0 and self.year % 100 == 0 and self.year % 400 == 0)
 
     def month_name(self) -> str:
         if self.escape:
@@ -280,7 +278,7 @@ class Tcalendar:
 
     @classmethod
     def range(cls, t1, t2) -> list:
-        """returns [t1: Tcalendar ... t2: Tcalendar]"""
+        """returns [t1: Tcalendar(y1, m1, d1), ..., t2: Tcalendar(y2, m2, d2) (+-) 1]: list"""
         return [i for i in cls.gen(t1, t2)]
 
     @staticmethod
@@ -293,8 +291,8 @@ class Tcalendar:
         return cls(y, m, 1).maxdays()
 
     @classmethod
-    def fullmonth(cls, m, *, leapyear: bool = False):
-        res = [(foo := cls(2000 if leapyear else 2001, m, 1))]
+    def fullmonth(cls, y, m):
+        res = [(foo := cls(y, m, 1))]
         for _ in range(foo.maxdays() - 1):
             res.append((foo := foo.nextday()))
         return res
