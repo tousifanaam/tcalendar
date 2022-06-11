@@ -8,8 +8,8 @@ class UnderDevError(NotImplementedError):
 
 class NotGregorianError(Exception):
     """
-    'The Gregorian calendar is the calendar used in most of the world. 
-    It was introduced in October 1582 by Pope Gregory XIII as a modification of, 
+    'The Gregorian calendar is the calendar used in most of the world.
+    It was introduced in October 1582 by Pope Gregory XIII as a modification of,
     and replacement for, the Julian calendar.' - source Wikipedia
     """
     pass
@@ -277,9 +277,9 @@ class Tcalendar:
                     break
 
     @classmethod
-    def range(cls, t1, t2) -> list:
+    def range(cls, t1, t2, step: int = 1) -> list:
         """returns [t1: Tcalendar(y1, m1, d1), ..., t2: Tcalendar(y2, m2, d2) (+-) 1]: list"""
-        return [i for i in cls.gen(t1, t2)]
+        return [i for i in cls.gen(t1, t2)][::step]
 
     @staticmethod
     def now():
