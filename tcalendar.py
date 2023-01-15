@@ -343,6 +343,3 @@ class Tcalendar:
                 return merge(foo(n[:len(n)//2]), foo(n[len(n)//2:]))
 
         return foo(l)
-
-
-print(Tcalendar(2023, 0, 1))
