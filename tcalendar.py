@@ -283,7 +283,7 @@ class Tcalendar:
 
     @staticmethod
     def now():
-        """now() -> Tuple(hour: int, minute: int, second: int)"""
+        """returns Tuple(hour: int, minute: int, second: int)"""
         return tuple(map(lambda x: int(x), str(datetime.today()).split(' ')[1].split('.')[0].split(":")))
 
     @classmethod
@@ -307,3 +307,39 @@ class Tcalendar:
     @classmethod
     def calendar(cls, y, m) -> str:
         return cls(y, m, 1).cald()
+
+    @classmethod
+    def sort(cls, l: list) -> list:
+        """
+        l: LIST[Tcalendar, ..., Tcalendar]
+
+        returns a sorted list of Tcalendar objects
+        """
+
+        def merge(a: list, b: list) -> list:
+            x, y, sol = (0, 0, [])
+            while True:
+                if a[x] < b[y]:
+                    sol.append(a[x])
+                    x += 1
+                elif a[x] > b[y]:
+                    sol.append(b[y])
+                    y += 1
+                elif a[x] == b[y]:
+                    sol.append(a[x])
+                    sol.append(b[y])
+                    x, y = x + 1, y + 1
+                if len(a) - 1 < x and len(b) - 1 < y:
+                    return sol
+                elif len(a) - 1 < x:
+                    return sol + foo(b[y:])
+                elif len(b) - 1 < y:
+                    return sol + foo(a[x:])
+
+        def foo(n: list) -> list:
+            if len(n) == 0 or len(n) == 1:
+                return n
+            else:
+                return merge(foo(n[:len(n)//2]), foo(n[len(n)//2:]))
+
+        return foo(l)
