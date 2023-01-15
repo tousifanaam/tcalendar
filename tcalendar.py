@@ -42,7 +42,7 @@ class Tcalendar:
             except ValueError:
                 raise ValueError(
                     "ERR. '{0}' - invalid year!".format(year)) from None
-            if year < 0:
+            if year <= 0:
                 raise ValueError(
                     "ERR. '{0}' - invalid year selected!".format(year))
             self.year = year
@@ -58,7 +58,7 @@ class Tcalendar:
                 else:
                     raise ValueError(
                         "ERR. '{0}' - invalid month selected!".format(month)) from None
-            if month < 0 or month > 12:
+            if month <= 0 or month > 12:
                 raise ValueError(
                     "ERR. '{0}' - invalid month selected!".format(month))
             self.month = month
@@ -69,7 +69,7 @@ class Tcalendar:
             except ValueError:
                 raise ValueError(
                     "ERR. '{0}' - invalid date!".format(day)) from None
-            if day < 0:
+            if day <= 0:
                 raise ValueError(
                     "ERR. '{0}' - invalid date selected!".format(day))
             self.day = day
@@ -343,3 +343,6 @@ class Tcalendar:
                 return merge(foo(n[:len(n)//2]), foo(n[len(n)//2:]))
 
         return foo(l)
+
+
+print(Tcalendar(2023, 0, 1))
