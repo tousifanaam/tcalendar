@@ -241,9 +241,13 @@ class Tcalendar:
             raise UnderDevError("Still working ...")
 
     def __eq__(self, _o: object):
+        if not isinstance(_o, Tcalendar):
+            raise TypeError("Can only compare Tcalendar with Tcalendar.")
         return (self.year, self.month, self.date) == (_o.year, _o.month, _o.date)
 
     def __gt__(self, _o: object):
+        if not isinstance(_o, Tcalendar):
+            raise TypeError("Can only compare Tcalendar with Tcalendar.")
         if self.year != _o.year:
             return self.year > _o.year
         elif self.month != _o.month:
@@ -254,6 +258,8 @@ class Tcalendar:
             return False
 
     def __lt__(self, _o: object):
+        if not isinstance(_o, Tcalendar):
+            raise TypeError("Can only compare Tcalendar with Tcalendar.")
         if self.year != _o.year:
             return self.year < _o.year
         elif self.month != _o.month:
@@ -343,3 +349,187 @@ class Tcalendar:
                 return merge(foo(n[:len(n)//2]), foo(n[len(n)//2:]))
 
         return foo(l)
+
+
+class Ttime:
+
+    AM = "AM"
+    PM = "PM"
+
+    class _Argcheck:
+
+        def __init__(self, h, m, s, me) -> None:
+
+            # meridiem check
+            self.tformat = 24
+            if me != None and isinstance(me, str):
+                self.tformat = 12
+                if me.lower() in ['am', 'ante', 'a']:
+                    self.meridiem = Ttime.AM
+                elif me.lower() in ['pm', 'post', 'p']:
+                    self.meridiem = Ttime.PM
+            elif me != None and isinstance(me, str):
+                raise ValueError(
+                    "ERR. '{0}' - invalid meridiem selected! [am:('a', 'am', 'ante'), pm:('p', 'pm', 'post')].".format(me))
+            elif not isinstance(me, str) and me != None:
+                raise TypeError(
+                    "ERR. '{0}' - invalid meridiem type! Should be str.".format(type(me)))
+            else:
+                self.meridiem = None
+
+            # hour
+            if isinstance(h, int):
+                if self.tformat == 12:
+                    if h >= 1 and h <= 12:
+                        self.hour = h
+                    else:
+                        raise ValueError(
+                            "ERR. '{0}' - invalid hour selected! [1 - 12]".format(h))
+                elif self.tformat == 24:
+                    if h >= 0 and h < 24:
+                        self.hour = h
+                    else:
+                        raise ValueError(
+                            "ERR. '{0}' - invalid hour selected! [0 - 23]".format(h))
+            else:
+                raise TypeError(
+                    "ERR. '{0}' - invalid hour type! Should be int.".format(type(h)))
+
+            # minute
+            if isinstance(m, int):
+                if m >= 0 and m < 60:
+                    self.minute = m
+                else:
+                    raise ValueError(
+                        "ERR. '{0}' - invalid minute selected! [0 - 59]".format(m))
+            else:
+                raise TypeError(
+                    "ERR. '{0}' - invalid minute type! Should be int.".format(type(m)))
+
+            # second
+            if isinstance(s, int):
+                if s >= 0 and s < 60:
+                    self.second = s
+                else:
+                    raise ValueError(
+                        "ERR. '{0}' - invalid second selected! [0 - 59]".format(s))
+            else:
+                raise TypeError(
+                    "ERR. '{0}' - invalid second type! Should be int.".format(type(s)))
+
+    def __init__(self, hour: int, minute: int, second: int, meridiem: str = None) -> None:
+        foo = self._Argcheck(hour, minute, second, meridiem)
+        self.hour = foo.hour
+        self.minute = foo.minute
+        self.second = foo.second
+        self.meridiem = foo.meridiem
+        self.tformat = foo.tformat
+
+    def __repr__(self) -> str:
+        if self.meridiem is None:
+            return "Ttime({0}, {1}, {2})".format(self.hour, self.minute, self.second)
+        else:
+            return "Ttime({0}, {1}, {2}, '{3}')".format(self.hour, self.minute, self.second, self.meridiem)
+
+    def __str__(self) -> str:
+        def foo(x): return str(x) if x > 9 else '0' + str(x)
+        if self.tformat == 12:
+            return "{0}:{1}:{2} {3}".format(foo(self.hour), foo(self.minute), foo(self.second), self.meridiem)
+        elif self.tformat == 24:
+            return "{0}:{1}:{2}".format(foo(self.hour), foo(self.minute), foo(self.second))
+
+    @classmethod
+    def now(cls):
+        """return a Ttime object of the current time in 24 hr format"""
+        return cls(*(Tcalendar.now()))
+
+    def format12(self) -> None:
+        """set the Ttime format to 12 hr format"""
+        if self.tformat == 24:
+            if self.hour >= 12:
+                if self.hour > 12:
+                    self.hour -= 12
+                self.meridiem = self.PM
+            else:
+                if self.hour == 0:
+                    self.hour = 12
+                self.meridiem = self.AM
+            self.tformat = 12
+
+    def format24(self) -> None:
+        """set the Ttime format to 24 hr format"""
+        if self.tformat == 12:
+            if self.meridiem == self.PM and self.hour != 12:
+                self.hour += 12
+            if self.meridiem == self.AM and self.hour == 12:
+                self.hour = 0
+            self.meridiem = None
+            self.tformat = 24
+
+    def _to_sec(self) -> int:
+        if self.tformat == 24:
+            return (self.hour * 3600) + (self.minute * 60) + self.second
+        else:
+            self.format24()
+            res = (self.hour * 3600) + (self.minute * 60) + self.second
+            self.format12()
+            return res
+
+    def __eq__(self, _o):
+        if not isinstance(_o, Ttime):
+            raise TypeError("Can only compare Ttime to Ttime.")
+        return self._to_sec() == _o._to_sec()
+
+    def __gt__(self, _o):
+        if not isinstance(_o, Ttime):
+            raise TypeError("Can only compare Ttime to Ttime.")
+        return self._to_sec() > _o._to_sec()
+
+    def __lt__(self, _o):
+        if not isinstance(_o, Ttime):
+            raise TypeError("Can only compare Ttime to Ttime.")
+        return self._to_sec() < _o._to_sec()
+
+    @classmethod
+    def sort(cls, l: list) -> list:
+        """
+        l: LIST[Ttime, ..., Ttime]
+
+        returns a sorted list of Tcalendar objects
+        """
+
+        def merge(a: list, b: list) -> list:
+            x, y, sol = (0, 0, [])
+            while True:
+                if a[x] < b[y]:
+                    sol.append(a[x])
+                    x += 1
+                elif a[x] > b[y]:
+                    sol.append(b[y])
+                    y += 1
+                elif a[x] == b[y]:
+                    sol.append(a[x])
+                    sol.append(b[y])
+                    x, y = x + 1, y + 1
+                if len(a) - 1 < x and len(b) - 1 < y:
+                    return sol
+                elif len(a) - 1 < x:
+                    return sol + foo(b[y:])
+                elif len(b) - 1 < y:
+                    return sol + foo(a[x:])
+
+        def foo(n: list) -> list:
+            if len(n) == 0 or len(n) == 1:
+                return n
+            else:
+                return merge(foo(n[:len(n)//2]), foo(n[len(n)//2:]))
+
+        return foo(l)
+
+    @staticmethod
+    def sec_to_hms(seconds: int) -> tuple:
+        """returns a tuple. Seconds -> (Hour, Min, Sec)"""
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        sec = seconds % 60
+        return (hours, minutes, sec)
