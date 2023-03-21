@@ -268,6 +268,16 @@ class Tcalendar:
             return self.date < _o.date
         else:
             return False
+        
+    def __le__(self, _o: object):
+        if not isinstance(_o, Tcalendar):
+            raise TypeError("Can only compare Tcalendar with Tcalendar.")
+        return self == _o or self < _o
+    
+    def __ge__(self, _o: object):
+        if not isinstance(_o, Tcalendar):
+            raise TypeError("Can only compare Tcalendar with Tcalendar.")
+        return self == _o or self > _o
 
     @staticmethod
     def gen(a, b):
@@ -425,6 +435,21 @@ class Ttime:
         self.meridiem = foo.meridiem
         self.tformat = foo.tformat
 
+    @property
+    def format(self):
+        return self.tformat
+    
+    @format.setter
+    def format(self, f):
+        if f == 12 or f == 24:
+            if self.format != f:
+                if self.format == 12:
+                    self.format24()
+                elif self.format == 24:
+                    self.format12()
+        else:
+            raise ValueError(f"Ttime format can only be integers of value 12 and 24 not {f}.")
+
     def __repr__(self) -> str:
         if self.meridiem is None:
             return "Ttime({0}, {1}, {2})".format(self.hour, self.minute, self.second)
@@ -437,6 +462,9 @@ class Ttime:
             return "{0}:{1}:{2} {3}".format(foo(self.hour), foo(self.minute), foo(self.second), self.meridiem)
         elif self.tformat == 24:
             return "{0}:{1}:{2}".format(foo(self.hour), foo(self.minute), foo(self.second))
+        
+    def __hash__(self) -> int:
+        return hash((self.hour, self.minute, self.second, self.format))
 
     @classmethod
     def now(cls):
@@ -489,6 +517,16 @@ class Ttime:
         if not isinstance(_o, Ttime):
             raise TypeError("Can only compare Ttime to Ttime.")
         return self._to_sec() < _o._to_sec()
+    
+    def __le__(self, _o):
+        if not isinstance(_o, Ttime):
+            raise TypeError("Can only compare Ttime to Ttime.")
+        return (a := self._to_sec()) == (b := _o._to_sec()) or a < b
+    
+    def __ge__(self, _o):
+        if not isinstance(_o, Ttime):
+            raise TypeError("Can only compare Ttime to Ttime.")
+        return (a := self._to_sec()) == (b := _o._to_sec()) or a > b
 
     @classmethod
     def sort(cls, l: list) -> list:
