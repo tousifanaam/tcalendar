@@ -1,4 +1,5 @@
 from datetime import datetime
+import copy
 
 
 class UnderDevError(NotImplementedError):
@@ -365,6 +366,7 @@ class Ttime:
 
     AM = "AM"
     PM = "PM"
+    TIMEDICT = {a*3600 + b*60 + c: (a, b, c) for a in range(24) for b in range(60) for c in range(60)}
 
     class _Argcheck:
 
@@ -571,3 +573,267 @@ class Ttime:
         minutes = (seconds % 3600) // 60
         sec = seconds % 60
         return (hours, minutes, sec)
+    
+
+class Tcalendar_time:
+
+
+    class ArgCheck:
+        
+        def __init__(self, cal: Tcalendar, ti: Ttime) -> None:
+            if isinstance(cal, Tcalendar):
+                self.cal = cal
+            else:
+                raise TypeError("Argument [cal] must be a Tcalendar object.")
+            if isinstance(ti, Ttime):
+                self.ti = ti
+            else:
+                raise TypeError("Argument [cal] must be a Ttime object.")
+
+
+    class Seconds:
+
+        SECVAL = 1
+
+        def __init__(self, n: int) -> None:
+            if isinstance(n, int) and n >= 0:
+                self.value = n
+            else:
+                raise TypeError("Argument must be an Integer object and greater than or equal to 0.")
+
+        def __str__(self):
+            return f"Seconds({self.value})"
+
+        def __repr__(self):
+            return self.__str__()
+
+        def __hash__(self):
+            return hash(self.value)
+
+
+    class Minute:
+
+        SECVAL = 60
+
+        def __init__(self, n: int) -> None:
+            if isinstance(n, int) and n >= 0:
+                self.value = n
+            else:
+                raise TypeError("Argument must be an Integer object and greater than or equal to 0.")
+
+        def __str__(self):
+            return f"Minute({self.value})"
+
+        def __repr__(self):
+            return self.__str__()
+
+        def __hash__(self):
+            return hash(self.value)
+
+
+    class Hour:
+
+        SECVAL = 3600
+
+        def __init__(self, n: int) -> None:
+            if isinstance(n, int) and n >= 0:
+                self.value = n
+            else:
+                raise TypeError("Argument must be an Integer object and greater than or equal to 0.")
+
+        def __str__(self):
+            return f"Hour({self.value})"
+
+        def __repr__(self):
+            return self.__str__()
+
+        def __hash__(self):
+            return hash(self.value)
+        
+
+    class Day:
+
+        SECVAL = 86400
+
+        def __init__(self, n: int) -> None:
+            if isinstance(n, int) and n >= 0:
+                self.value = n
+            else:
+                raise TypeError("Argument must be an Integer object and greater than or equal to 0.")
+
+        def __str__(self):
+            return f"Day({self.value})"
+
+        def __repr__(self):
+            return self.__str__()
+
+        def __hash__(self):
+            return hash(self.value)
+        
+
+    class Week:
+
+        def __init__(self, n: int) -> None:
+            if isinstance(n, int) and n >= 0:
+                self.value = n
+            else:
+                raise TypeError("Argument (n) must be an Integer object and greater than or equal to 0.")
+            self.dc = 7 # day_count
+
+        def __str__(self):
+            return f"Week({self.value})"
+
+        def __repr__(self):
+            return self.__str__()
+
+        def __hash__(self):
+            return hash(self.value)
+        
+
+    class Month:
+
+        def __init__(self, n: int, default_day_count: int = 30) -> None:
+            if isinstance(n, int) and n >= 0:
+                self.value = n
+            else:
+                raise TypeError("Argument (n) must be an Integer object and greater than or equal to 0.")
+            if isinstance(default_day_count, int) and default_day_count in (28, 29, 30, 31):
+                self.dc = default_day_count # day_count
+            else:
+                raise TypeError("Argument (default_day_count) must be an Integer object and must be in range [28, 31].")
+
+        def __str__(self):
+            return f"Month({self.value})"
+
+        def __repr__(self):
+            return self.__str__()
+
+        def __hash__(self):
+            return hash(self.value)
+        
+
+    class Year:
+
+        def __init__(self, n: int, default_day_count: int = 365) -> None:
+            if isinstance(n, int) and n >= 0:
+                self.value = n
+            else:
+                raise TypeError("Argument (n) must be an Integer object and greater than or equal to 0.")
+            if isinstance(default_day_count, int) and default_day_count in (365, 366):
+                self.dc = default_day_count # day_count
+            else:
+                raise TypeError("Argument (default_day_count) must be an Integer object and must be in range [365, 366].")
+
+        def __str__(self):
+            return f"Year({self.value})"
+
+        def __repr__(self):
+            return self.__str__()
+
+        def __hash__(self):
+            return hash(self.value)
+
+
+    def __init__(self, cal: Tcalendar, ti: Ttime) -> None:
+        foo = self.ArgCheck(cal, ti)
+        self.cal = foo.cal
+        self.ti = foo.ti
+
+    def __repr__(self) -> str:
+        return f"Tcalendar_time({repr(self.cal)}, {repr(self.ti)})"
+    
+    def __str__(self) -> str:
+        return f"{self.cal} - {self.ti}"
+    
+    def __hash__(self) -> int:
+        return hash((self.cal, self.ti))
+    
+    def deep_copy(self):
+        return copy.deepcopy(self)
+    
+    def sub_sec(self, n: int):
+        x = self.ti._to_sec() - (n)
+        while True:
+            if x < 0:
+                self.cal -= 1
+                x = 86400 + x
+            else:
+                break
+        self.ti = Ttime(*(Ttime.TIMEDICT[x]))
+
+    def add_sec(self, n: int):
+        x = self.ti._to_sec() + n
+        while x >= 86400:
+            self.cal += 1
+            x -= 86400
+        self.ti = Ttime(*(Ttime.TIMEDICT[x]))
+
+    def __eq__(self, other):
+        if not isinstance(other, Tcalendar_time):
+            return False
+        return self.cal == other.cal and self.ti == other.ti
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        if not isinstance(other, Tcalendar_time):
+            return NotImplemented
+        if self.cal < other.cal:
+            return True
+        elif self.cal == other.cal:
+            return self.ti < other.ti
+        else:
+            return False
+
+    def __le__(self, other):
+        if not isinstance(other, Tcalendar_time):
+            return NotImplemented
+        return self < other or self == other
+
+    def __gt__(self, other):
+        if not isinstance(other, Tcalendar_time):
+            return NotImplemented
+        if self.cal > other.cal:
+            return True
+        elif self.cal == other.cal:
+            return self.ti > other.ti
+        else:
+            return False
+
+    def __ge__(self, other):
+        if not isinstance(other, Tcalendar_time):
+            return NotImplemented
+        return self > other or self == other
+    
+    def add(self, time_interval):
+        if isinstance(time_interval, Tcalendar_time.Seconds):
+            self.add_sec(time_interval.value)
+        elif isinstance(time_interval, Tcalendar_time.Minute):
+            self.add_sec(time_interval.value * time_interval.SECVAL)
+        elif isinstance(time_interval, Tcalendar_time.Hour):
+            self.add_sec(time_interval.value * time_interval.SECVAL)
+        elif isinstance(time_interval, Tcalendar_time.Day):
+            self.cal += time_interval.value
+        elif isinstance(time_interval, Tcalendar_time.Week):
+            self.cal += (time_interval.value * time_interval.dc)
+        elif isinstance(time_interval, Tcalendar_time.Month):
+            self.cal += (time_interval.value * time_interval.dc)
+        elif isinstance(time_interval, Tcalendar_time.Year):
+            self.cal += (time_interval.value * time_interval.dc)
+
+    def sub(self, time_interval):
+        if isinstance(time_interval, Tcalendar_time.Seconds):
+            self.sub_sec(time_interval.value)
+        elif isinstance(time_interval, Tcalendar_time.Minute):
+            self.sub_sec(time_interval.value * time_interval.SECVAL)
+        elif isinstance(time_interval, Tcalendar_time.Hour):
+            self.sub_sec(time_interval.value * time_interval.SECVAL)
+        elif isinstance(time_interval, Tcalendar_time.Day):
+            self.cal -= time_interval.value
+        elif isinstance(time_interval, Tcalendar_time.Week):
+            self.cal -= (time_interval.value * time_interval.dc)
+        elif isinstance(time_interval, Tcalendar_time.Month):
+            self.cal -= (time_interval.value * time_interval.dc)
+        elif isinstance(time_interval, Tcalendar_time.Year):
+            self.cal -= (time_interval.value * time_interval.dc)
