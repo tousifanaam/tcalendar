@@ -113,6 +113,9 @@ class Tcalendar:
 
     def __hash__(self) -> int:
         return hash((self.year, self.month, self.date))
+    
+    def deep_copy(self):
+        return copy.deepcopy(self)
 
     def leapyear(self) -> bool:
         """
@@ -467,6 +470,9 @@ class Ttime:
         
     def __hash__(self) -> int:
         return hash((self.hour, self.minute, self.second, self.format))
+    
+    def deep_copy(self):
+        return copy.deepcopy(self)
 
     @classmethod
     def now(cls):
@@ -734,8 +740,8 @@ class Tcalendar_time:
             return hash(self.value)
 
 
-    def __init__(self, cal: Tcalendar, ti: Ttime) -> None:
-        foo = self.ArgCheck(cal, ti)
+    def __init__(self, the_date: Tcalendar, the_time: Ttime) -> None:
+        foo = self.ArgCheck(the_date, the_time)
         self.cal = foo.cal
         self.ti = foo.ti
 
@@ -759,6 +765,7 @@ class Tcalendar_time:
                 x = 86400 + x
             else:
                 break
+        if self.cal.escape: self.cal = Tcalendar(*(self.cal._escape_values), escape=True)
         self.ti = Ttime(*(Ttime.TIMEDICT[x]))
 
     def add_sec(self, n: int):
@@ -766,6 +773,7 @@ class Tcalendar_time:
         while x >= 86400:
             self.cal += 1
             x -= 86400
+        if self.cal.escape: self.cal = Tcalendar(*(self.cal._escape_values), escape=True)
         self.ti = Ttime(*(Ttime.TIMEDICT[x]))
 
     def __eq__(self, other):
@@ -814,13 +822,13 @@ class Tcalendar_time:
         elif isinstance(time_interval, Tcalendar_time.Hour):
             self.add_sec(time_interval.value * time_interval.SECVAL)
         elif isinstance(time_interval, Tcalendar_time.Day):
-            self.cal += time_interval.value
+            if not self.cal.escape: self.cal += time_interval.value
         elif isinstance(time_interval, Tcalendar_time.Week):
-            self.cal += (time_interval.value * time_interval.dc)
+            if not self.cal.escape: self.cal += (time_interval.value * time_interval.dc)
         elif isinstance(time_interval, Tcalendar_time.Month):
-            self.cal += (time_interval.value * time_interval.dc)
+            if not self.cal.escape: self.cal += (time_interval.value * time_interval.dc)
         elif isinstance(time_interval, Tcalendar_time.Year):
-            self.cal += (time_interval.value * time_interval.dc)
+            if not self.cal.escape: self.cal += (time_interval.value * time_interval.dc)
 
     def sub(self, time_interval):
         if isinstance(time_interval, Tcalendar_time.Seconds):
@@ -830,10 +838,10 @@ class Tcalendar_time:
         elif isinstance(time_interval, Tcalendar_time.Hour):
             self.sub_sec(time_interval.value * time_interval.SECVAL)
         elif isinstance(time_interval, Tcalendar_time.Day):
-            self.cal -= time_interval.value
+            if not self.cal.escape: self.cal -= time_interval.value
         elif isinstance(time_interval, Tcalendar_time.Week):
-            self.cal -= (time_interval.value * time_interval.dc)
+            if not self.cal.escape: self.cal -= (time_interval.value * time_interval.dc)
         elif isinstance(time_interval, Tcalendar_time.Month):
-            self.cal -= (time_interval.value * time_interval.dc)
+            if not self.cal.escape: self.cal -= (time_interval.value * time_interval.dc)
         elif isinstance(time_interval, Tcalendar_time.Year):
-            self.cal -= (time_interval.value * time_interval.dc)
+            if not self.cal.escape: self.cal -= (time_interval.value * time_interval.dc)
