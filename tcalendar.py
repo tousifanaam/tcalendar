@@ -845,3 +845,8 @@ class Tcalendar_time:
             if not self.cal.escape: self.cal -= (time_interval.value * time_interval.dc)
         elif isinstance(time_interval, Tcalendar_time.Year):
             if not self.cal.escape: self.cal -= (time_interval.value * time_interval.dc)
+
+    @classmethod
+    def present(cls):
+        "returns present date and time"
+        return cls(Tcalendar.today(), Ttime.now())
