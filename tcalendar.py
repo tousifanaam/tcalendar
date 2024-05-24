@@ -138,7 +138,7 @@ class Tcalendar:
             return
         return 29 if self.leapyear() and self.month == 2 else [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][self.month - 1]
 
-    def day(self, return_int: bool = False) -> str or int:
+    def day(self, return_int: bool = False):
         """
         find week day of a particular date
         """
@@ -162,19 +162,15 @@ class Tcalendar:
 
     def cald(self) -> str:
         """
-        returns the calendar page of any valid month and year pair
+        returns the calendar page
         """
         if self.escape:
             return
-        n = Tcalendar(self.year, self.month, 1).day(return_int=True)
-        n = n - 1 if n != 0 else 6
-        foo = ["  " for _ in range(
-            n)] + ["0{0}".format(i + 1)[-2:] for i in range(self.maxdays())]
-        bar = [foo[i: i+7] for i in range(0, len(foo), 7)]
-        top_part = "\t" + self.MONTHSLIST[self.month - 1].title() + " " + str(self.year) + \
-            "\n\nSUN MON TUE WED THU FRI SAT\n --  --  --  --  --  --  --\n "
-        res = "\n ".join(["  ".join(i) for i in bar])
-        return top_part + res
+        _days = [f"{i:02}" for i in range(1, self.maxdays() + 1)]
+        _days[self.date - 1] = f"\033[103m\033[30m{self.date:02}\033[0m"
+        if Tcalendar(self.year, self.month, 1).day(return_int=True) == 0: _days = ["  " for _ in range(6)] + _days
+        else: _days = ["  " for _ in range(1, Tcalendar(self.year, self.month, 1).day(return_int=True))] + _days
+        return f"{self.month_name()} {self.year}".center(28) + "\n\nSUN MON TUE WED THU FRI SAT\n--  --  --  --  --  --  --\n" + "\n".join(["  ".join(_days[i: i + 7]) for i in range(0, len(_days) + 1, 7)])
 
     def nextday(self) -> object:
         """
@@ -765,7 +761,6 @@ class Tcalendar_time:
                 x = 86400 + x
             else:
                 break
-        if self.cal.escape: self.cal = Tcalendar(*(self.cal._escape_values), escape=True)
         self.ti = Ttime(*(Ttime.TIMEDICT[x]))
 
     def add_sec(self, n: int):
@@ -773,7 +768,6 @@ class Tcalendar_time:
         while x >= 86400:
             self.cal += 1
             x -= 86400
-        if self.cal.escape: self.cal = Tcalendar(*(self.cal._escape_values), escape=True)
         self.ti = Ttime(*(Ttime.TIMEDICT[x]))
 
     def __eq__(self, other):
@@ -822,13 +816,13 @@ class Tcalendar_time:
         elif isinstance(time_interval, Tcalendar_time.Hour):
             self.add_sec(time_interval.value * time_interval.SECVAL)
         elif isinstance(time_interval, Tcalendar_time.Day):
-            if not self.cal.escape: self.cal += time_interval.value
+            self.cal += time_interval.value
         elif isinstance(time_interval, Tcalendar_time.Week):
-            if not self.cal.escape: self.cal += (time_interval.value * time_interval.dc)
+            self.cal += (time_interval.value * time_interval.dc)
         elif isinstance(time_interval, Tcalendar_time.Month):
-            if not self.cal.escape: self.cal += (time_interval.value * time_interval.dc)
+            self.cal += (time_interval.value * time_interval.dc)
         elif isinstance(time_interval, Tcalendar_time.Year):
-            if not self.cal.escape: self.cal += (time_interval.value * time_interval.dc)
+            self.cal += (time_interval.value * time_interval.dc)
 
     def sub(self, time_interval):
         if isinstance(time_interval, Tcalendar_time.Seconds):
@@ -838,15 +832,10 @@ class Tcalendar_time:
         elif isinstance(time_interval, Tcalendar_time.Hour):
             self.sub_sec(time_interval.value * time_interval.SECVAL)
         elif isinstance(time_interval, Tcalendar_time.Day):
-            if not self.cal.escape: self.cal -= time_interval.value
+            self.cal -= time_interval.value
         elif isinstance(time_interval, Tcalendar_time.Week):
-            if not self.cal.escape: self.cal -= (time_interval.value * time_interval.dc)
+            self.cal -= (time_interval.value * time_interval.dc)
         elif isinstance(time_interval, Tcalendar_time.Month):
-            if not self.cal.escape: self.cal -= (time_interval.value * time_interval.dc)
+            self.cal -= (time_interval.value * time_interval.dc)
         elif isinstance(time_interval, Tcalendar_time.Year):
-            if not self.cal.escape: self.cal -= (time_interval.value * time_interval.dc)
-
-    @classmethod
-    def present(cls):
-        "returns present date and time"
-        return cls(Tcalendar.today(), Ttime.now())
+            self.cal -= (time_interval.value * time_interval.dc)
