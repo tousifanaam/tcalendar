@@ -126,6 +126,7 @@ class Tcalendar:
         return (self.year % 4 == 0 and self.year % 100 != 0) or (self.year % 4 == 0 and self.year % 100 == 0 and self.year % 400 == 0)
 
     def month_name(self) -> str:
+        "get month name. ex. January"
         if self.escape:
             return
         return self.MONTHSLIST[self.month - 1].title()
@@ -207,15 +208,18 @@ class Tcalendar:
 
     @classmethod
     def today(cls):
+        "returns a Tcalendar instance with today's date"
         i = str(datetime.today()).split(' ')[0].split('-')
         return cls(i[0], i[1], i[2])
 
     @classmethod
     def yesterday(cls):
+        "returns a Tcalendar instance with yesterday's date"
         return cls.today() - 1
 
     @classmethod
     def tomorrow(cls):
+        "returns a Tcalendar instance with tomorrow's date"
         return cls.today() + 1
 
     def __add__(self, _o):
@@ -304,10 +308,12 @@ class Tcalendar:
 
     @classmethod
     def maxdays_in_month(cls, y, m) -> int:
+        "returns how many max days in a month with year and month passed as arguments"
         return cls(y, m, 1).maxdays()
 
     @classmethod
     def fullmonth(cls, y, m):
+        "returns an iterable of all dates in a specified month of a particular year"
         res = [(foo := cls(y, m, 1))]
         for _ in range(foo.maxdays() - 1):
             res.append((foo := foo.nextday()))
@@ -315,6 +321,7 @@ class Tcalendar:
 
     @classmethod
     def fullyear(cls, y):
+        "returns an iterable of all dates in a year"
         res = [(foo := cls(y, 1, 1))]
         for _ in range((366 if foo.leapyear() else 365) - 1):
             res.append((foo := foo.nextday()))
@@ -322,7 +329,17 @@ class Tcalendar:
 
     @classmethod
     def calendar(cls, y, m) -> str:
-        return cls(y, m, 1).cald()
+        "returns a string with the calendar page for a specified year and month"
+        tc = Tcalendar(y, m, 1)
+        n = tc.day(return_int=True)
+        n = n - 1 if n != 0 else 6
+        foo = ["  " for _ in range(
+            n)] + ["0{0}".format(i + 1)[-2:] for i in range(tc.maxdays())]
+        bar = [foo[i: i+7] for i in range(0, len(foo), 7)]
+        top_part = "\t" + cls.MONTHSLIST[tc.month - 1].title() + " " + str(tc.year) + \
+            "\n\nSUN MON TUE WED THU FRI SAT\n --  --  --  --  --  --  --\n "
+        res = "\n ".join(["  ".join(i) for i in bar])
+        return top_part + res
 
     @classmethod
     def sort(cls, l: list) -> list:
