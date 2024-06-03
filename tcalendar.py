@@ -2,6 +2,9 @@ from datetime import datetime
 import copy
 
 
+AUTHOR = "Tousif Anaam"
+VERSION = 0.2
+
 class UnderDevError(NotImplementedError):
     """Under development error"""
     pass
@@ -786,6 +789,11 @@ class Tcalendar_time:
             self.cal += 1
             x -= 86400
         self.ti = Ttime(*(Ttime.TIMEDICT[x]))
+
+    @classmethod
+    def now(cls):
+        "return current time as a Tcalendar_ttime object"
+        return Tcalendar_time(Tcalendar.today(), Ttime.now())
 
     def __eq__(self, other):
         if not isinstance(other, Tcalendar_time):
