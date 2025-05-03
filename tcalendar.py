@@ -795,15 +795,17 @@ class Tcalendar_time:
         "return current time as a Tcalendar_ttime object"
         return Tcalendar_time(Tcalendar.today(), Ttime.now())
 
-    def __eq__(self, other):
+    def __eq__(self, other: "Tcalendar_time"):
         if not isinstance(other, Tcalendar_time):
-            return False
+            return NotImplemented
         return self.cal == other.cal and self.ti == other.ti
 
-    def __ne__(self, other):
+    def __ne__(self, other: "Tcalendar_time"):
+        if not isinstance(other, Tcalendar_time):
+            return NotImplemented
         return not self.__eq__(other)
 
-    def __lt__(self, other):
+    def __lt__(self, other: "Tcalendar_time"):
         if not isinstance(other, Tcalendar_time):
             return NotImplemented
         if self.cal < other.cal:
@@ -813,12 +815,12 @@ class Tcalendar_time:
         else:
             return False
 
-    def __le__(self, other):
+    def __le__(self, other: "Tcalendar_time"):
         if not isinstance(other, Tcalendar_time):
             return NotImplemented
         return self < other or self == other
 
-    def __gt__(self, other):
+    def __gt__(self, other: "Tcalendar_time"):
         if not isinstance(other, Tcalendar_time):
             return NotImplemented
         if self.cal > other.cal:
@@ -828,10 +830,21 @@ class Tcalendar_time:
         else:
             return False
 
-    def __ge__(self, other):
+    def __ge__(self, other: "Tcalendar_time"):
         if not isinstance(other, Tcalendar_time):
             return NotImplemented
         return self > other or self == other
+    
+    def __sub__(self, _o: "Tcalendar_time"):
+        if not isinstance(_o, Tcalendar_time):
+            return NotImplemented
+        if self.cal == _o.cal:
+            h_res = (diff := abs(self.ti._to_sec() - _o.ti._to_sec())) // (60 * 60)
+            m_res = (diff // 60) - (h_res * 60)
+            s_res = diff - (m_res * 60) - (h_res * 60 * 60)
+            return self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res)
+        else:
+            raise UnderDevError("Still working ...")
     
     def add(self, time_interval):
         if isinstance(time_interval, Tcalendar_time.Seconds):
