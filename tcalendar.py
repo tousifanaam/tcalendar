@@ -869,20 +869,32 @@ class Tcalendar_time:
                 return self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res), self._Sign()
 
     def add(self, *, second: int = 0, minute: int = 0, hour: int = 0, day: int = 0, week: int = 0, month: int = 0, year: int = 0):
-        h, m, s = self.Hour(hour), self.Minute(minute), self.Seconds(second)
-        y, mo, w, d = self.Year(year), self.Month(month), self.Week(week), self.Day(day)
+        if any(x < 0 for x in (second, minute, hour, day, week, month, year)):
+            raise ValueError("All arguments must be non-negative integers.")
         dt = self.to_datetime()
-        dt += timedelta(hours=h.value, minutes=m.value, seconds=s.value)
-        dt += relativedelta(year=y.value, month=mo.value, weeks=w.value, days=d.value)
+        dt += timedelta(
+            seconds=second,
+            minutes=minute,
+            hours=hour,
+            days=day,
+            weeks=week
+        )
+        dt += relativedelta(months=month, years=year)
         self.cal = Tcalendar(dt.year, dt.month, dt.day)
         self.ti = Ttime(dt.hour, dt.minute, dt.second)
 
     def sub(self, *, second: int = 0, minute: int = 0, hour: int = 0, day: int = 0, week: int = 0, month: int = 0, year: int = 0):
-        h, m, s = self.Hour(hour), self.Minute(minute), self.Seconds(second)
-        y, mo, w, d = self.Year(year), self.Month(month), self.Week(week), self.Day(day)
+        if any(x < 0 for x in (second, minute, hour, day, week, month, year)):
+            raise ValueError("All arguments must be non-negative integers.")
         dt = self.to_datetime()
-        dt -= timedelta(hours=h.value, minutes=m.value, seconds=s.value)
-        dt -= relativedelta(year=y.value, month=mo.value, weeks=w.value, days=d.value)
+        dt -= timedelta(
+            seconds=second,
+            minutes=minute,
+            hours=hour,
+            days=day,
+            weeks=week
+        )
+        dt -= relativedelta(months=month, years=year)
         self.cal = Tcalendar(dt.year, dt.month, dt.day)
         self.ti = Ttime(dt.hour, dt.minute, dt.second)
 
