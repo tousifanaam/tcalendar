@@ -389,7 +389,6 @@ class Ttime:
 
     AM = "AM"
     PM = "PM"
-    TIMEDICT = {a*3600 + b*60 + c: (a, b, c) for a in range(24) for b in range(60) for c in range(60)}
 
     class _Argcheck:
 
@@ -799,23 +798,6 @@ class Tcalendar_time:
     
     def deep_copy(self):
         return copy.deepcopy(self)
-    
-    def sub_sec(self, n: int):
-        x = self.ti._to_sec() - (n)
-        while True:
-            if x < 0:
-                self.cal -= 1
-                x = 86400 + x
-            else:
-                break
-        self.ti = Ttime(*(Ttime.TIMEDICT[x]))
-
-    def add_sec(self, n: int):
-        x = self.ti._to_sec() + n
-        while x >= 86400:
-            self.cal += 1
-            x -= 86400
-        self.ti = Ttime(*(Ttime.TIMEDICT[x]))
 
     @classmethod
     def now(cls):
