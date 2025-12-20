@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timedelta
 import copy
 
 
@@ -379,6 +380,9 @@ class Tcalendar:
                 return merge(foo(n[:len(n)//2]), foo(n[len(n)//2:]))
 
         return foo(l)
+    
+    def to_datetime(tc: "Tcalendar") -> datetime:
+        return datetime(tc.year, tc.month, tc.date)
 
 
 class Ttime:
@@ -595,6 +599,9 @@ class Ttime:
         minutes = (seconds % 3600) // 60
         sec = seconds % 60
         return (hours, minutes, sec)
+    
+    def to_timedelta(tt: "Ttime") -> timedelta:
+        return timedelta(hours=tt.hour, minutes=tt.minute, seconds=tt.second)
     
 
 class Tcalendar_time:
@@ -877,3 +884,7 @@ class Tcalendar_time:
             self.cal -= (time_interval.value * time_interval.dc)
         elif isinstance(time_interval, Tcalendar_time.Year):
             self.cal -= (time_interval.value * time_interval.dc)
+
+    def to_datetime(tct: "Tcalendar_time") -> datetime:
+        h, m, s = tct.ti.hour, tct.ti.minute, tct.ti.second
+        return datetime(tct.cal.year, tct.cal.month, tct.cal.date, h, m, s)
