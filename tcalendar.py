@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from zoneinfo import ZoneInfo
 import copy
 
 
 AUTHOR = "Tousif Anaam"
-VERSION = 0.2
+VERSION = 0.3
 
 class UnderDevError(NotImplementedError):
     """Under development error"""
@@ -211,10 +212,16 @@ class Tcalendar:
         return Tcalendar(y, m, d)
 
     @classmethod
-    def today(cls):
+    def today(cls, tz: ZoneInfo = None):
         "returns a Tcalendar instance with today's date"
-        i = str(datetime.today()).split(' ')[0].split('-')
-        return cls(i[0], i[1], i[2])
+        if tz is None:
+            i = str(datetime.today()).split(' ')[0].split('-')
+            return cls(i[0], i[1], i[2])
+        else:
+            if isinstance(tz, ZoneInfo):
+                return Tcalendar_time.from_datetime(datetime.now(tz)).cal
+            else:
+                raise TypeError(f"tz argument must be of type Zoneinfo not {type(tz)}.")
 
     @classmethod
     def yesterday(cls):
@@ -494,9 +501,15 @@ class Ttime:
         return copy.deepcopy(self)
 
     @classmethod
-    def now(cls):
+    def now(cls, tz: ZoneInfo = None):
         """return a Ttime object of the current time in 24 hr format"""
-        return cls(*(Tcalendar.now()))
+        if tz is None:
+            return cls(*(Tcalendar.now()))
+        else:
+            if isinstance(tz, ZoneInfo):
+                return Tcalendar_time.from_datetime(datetime.now(tz)).ti
+            else:
+                raise TypeError(f"tz argument must be of type Zoneinfo not {type(tz)}.")
 
     def format12(self) -> None:
         """set the Ttime format to 12 hr format"""
@@ -800,9 +813,15 @@ class Tcalendar_time:
         return copy.deepcopy(self)
 
     @classmethod
-    def now(cls):
+    def now(cls, tz: ZoneInfo = None):
         "return current time as a Tcalendar_ttime object"
-        return Tcalendar_time(Tcalendar.today(), Ttime.now())
+        if tz is None:
+            return Tcalendar_time(Tcalendar.today(), Ttime.now())
+        else:
+            if isinstance(tz, ZoneInfo):
+                return Tcalendar_time.from_datetime(datetime.now(tz))
+            else:
+                raise TypeError(f"tz argument must be of type Zoneinfo not {type(tz)}.")
 
     def __eq__(self, other: "Tcalendar_time"):
         if not isinstance(other, Tcalendar_time):
@@ -847,6 +866,9 @@ class Tcalendar_time:
     def __sub__(self, _o: "Tcalendar_time"):
         if not isinstance(_o, Tcalendar_time):
             return NotImplemented
+        else:
+            if self.cal.escape or _o.cal.escape: raise ValueError("Ivalid operation on escaped values.")
+
         if self.cal == _o.cal:
             h_res = (diff := abs(self.ti._to_sec() - _o.ti._to_sec())) // (60 * 60)
             m_res = (diff // 60) - (h_res * 60)
@@ -869,8 +891,10 @@ class Tcalendar_time:
                 return self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res), self._Sign()
 
     def add(self, *, second: int = 0, minute: int = 0, hour: int = 0, day: int = 0, week: int = 0, month: int = 0, year: int = 0):
+        if self.cal.escape: raise ValueError("Ivalid operation on escaped values.")
         if any(x < 0 for x in (second, minute, hour, day, week, month, year)):
             raise ValueError("All arguments must be non-negative integers.")
+        old_cal, old_ti = self.cal.deep_copy(), self.ti.deep_copy()
         dt = self.to_datetime()
         dt += timedelta(
             seconds=second,
@@ -880,12 +904,19 @@ class Tcalendar_time:
             weeks=week
         )
         dt += relativedelta(months=month, years=year)
-        self.cal = Tcalendar(dt.year, dt.month, dt.day)
-        self.ti = Ttime(dt.hour, dt.minute, dt.second)
+        try:
+            self.cal = Tcalendar(dt.year, dt.month, dt.day)
+            self.ti = Ttime(dt.hour, dt.minute, dt.second)
+        except (ValueError, NotGregorianError):
+            self.cal = old_cal
+            self.ti = old_ti
+            raise NotGregorianError("Resulting date is pre-Gregorian.") from None
 
     def sub(self, *, second: int = 0, minute: int = 0, hour: int = 0, day: int = 0, week: int = 0, month: int = 0, year: int = 0):
+        if self.cal.escape: raise ValueError("Ivalid operation on escaped values.")
         if any(x < 0 for x in (second, minute, hour, day, week, month, year)):
             raise ValueError("All arguments must be non-negative integers.")
+        old_cal, old_ti = self.cal.deep_copy(), self.ti.deep_copy()
         dt = self.to_datetime()
         dt -= timedelta(
             seconds=second,
@@ -895,8 +926,13 @@ class Tcalendar_time:
             weeks=week
         )
         dt -= relativedelta(months=month, years=year)
-        self.cal = Tcalendar(dt.year, dt.month, dt.day)
-        self.ti = Ttime(dt.hour, dt.minute, dt.second)
+        try:
+            self.cal = Tcalendar(dt.year, dt.month, dt.day)
+            self.ti = Ttime(dt.hour, dt.minute, dt.second)
+        except (ValueError, NotGregorianError):
+            self.cal = old_cal
+            self.ti = old_ti
+            raise NotGregorianError("Resulting date is pre-Gregorian.") from None
 
     def to_datetime(tct: "Tcalendar_time") -> datetime:
         h, m, s = tct.ti.hour, tct.ti.minute, tct.ti.second
