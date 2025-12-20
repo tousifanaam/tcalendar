@@ -863,32 +863,29 @@ class Tcalendar_time:
             return NotImplemented
         return self > other or self == other
     
-    def __sub__(self, _o: "Tcalendar_time"):
+    def __sub__(self, _o: "Tcalendar_time", give_sign: bool = False):
+        if not isinstance(give_sign, bool): raise TypeError("`give_sign` argument must be of boolean type.") 
         if not isinstance(_o, Tcalendar_time):
             return NotImplemented
         else:
             if self.cal.escape or _o.cal.escape: raise ValueError("Ivalid operation on escaped values.")
 
-        if self.cal == _o.cal:
-            h_res = (diff := abs(self.ti._to_sec() - _o.ti._to_sec())) // (60 * 60)
-            m_res = (diff // 60) - (h_res * 60)
-            s_res = diff - (m_res * 60) - (h_res * 60 * 60)
-            return self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res)
-        else:
-            dt1 = self.to_datetime()
-            dt2 = _o.to_datetime()
-            diff = int((dt2 - dt1).total_seconds())
+        dt1 = self.to_datetime()
+        dt2 = _o.to_datetime()
+        diff = int((dt2 - dt1).total_seconds())
+        h_res = diff // (60 * 60)
+        m_res = (diff // 60) - (h_res * 60)
+        s_res = diff - (m_res * 60) - (h_res * 60 * 60)
+        try:
+            res = self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res), self._Sign(False)
+            return res if give_sign else res[:3]
+        except TypeError:
+            diff = abs(int((dt2 - dt1).total_seconds()))
             h_res = diff // (60 * 60)
             m_res = (diff // 60) - (h_res * 60)
             s_res = diff - (m_res * 60) - (h_res * 60 * 60)
-            try:
-                return self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res), self._Sign(False)
-            except TypeError:
-                diff = abs(int((dt2 - dt1).total_seconds()))
-                h_res = diff // (60 * 60)
-                m_res = (diff // 60) - (h_res * 60)
-                s_res = diff - (m_res * 60) - (h_res * 60 * 60)
-                return self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res), self._Sign()
+            res = self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res), self._Sign(False)
+            return res if give_sign else res[:3]
 
     def add(self, *, second: int = 0, minute: int = 0, hour: int = 0, day: int = 0, week: int = 0, month: int = 0, year: int = 0):
         if self.cal.escape: raise ValueError("Ivalid operation on escaped values.")
@@ -934,11 +931,18 @@ class Tcalendar_time:
             self.ti = old_ti
             raise NotGregorianError("Resulting date is pre-Gregorian.") from None
 
-    def to_datetime(tct: "Tcalendar_time") -> datetime:
-        h, m, s = tct.ti.hour, tct.ti.minute, tct.ti.second
-        return datetime(tct.cal.year, tct.cal.month, tct.cal.date, h, m, s)
+    def to_datetime(self) -> datetime:
+        if self.cal.escape: raise ValueError("Invalid overperation on Tcalendar with escaped values.")
+        if self.ti.format == 12: 
+            self.ti.format24()
+            h, m, s = self.ti.hour, self.ti.minute, self.ti.second
+            self.ti.format12()
+        else:
+            h, m, s = self.ti.hour, self.ti.minute, self.ti.second
+        return datetime(self.cal.year, self.cal.month, self.cal.date, h, m, s)
 
     def from_datetime(dt: datetime) -> "Tcalendar_time":
+        if not isinstance(dt, datetime): raise TypeError("Argument must be of type datetime.")
         return Tcalendar_time(
             Tcalendar(dt.year, dt.month, dt.day),
             Ttime(dt.hour, dt.minute, dt.second)
