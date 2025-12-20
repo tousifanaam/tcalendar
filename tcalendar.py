@@ -1,5 +1,5 @@
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 import copy
 
 
@@ -761,6 +761,26 @@ class Tcalendar_time:
 
         def __hash__(self):
             return hash(self.value)
+        
+    class _Sign:
+
+        POS = "+"
+        NEG = "-"
+
+        def __init__(self, ispos: bool = True):
+            if ispos:
+                self.sign = self.POS
+            else:
+                self.sign = self.NEG
+
+        def __str__(self):
+            return f"Sign({self.sign})"
+
+        def __repr__(self):
+            return self.sign.__str__()
+
+        def __hash__(self):
+            return hash(self.value)
 
 
     def __init__(self, the_date: Tcalendar, the_time: Ttime) -> None:
@@ -851,40 +871,45 @@ class Tcalendar_time:
             s_res = diff - (m_res * 60) - (h_res * 60 * 60)
             return self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res)
         else:
-            raise UnderDevError("Still working ...")
-    
-    def add(self, time_interval):
-        if isinstance(time_interval, Tcalendar_time.Seconds):
-            self.add_sec(time_interval.value)
-        elif isinstance(time_interval, Tcalendar_time.Minute):
-            self.add_sec(time_interval.value * time_interval.SECVAL)
-        elif isinstance(time_interval, Tcalendar_time.Hour):
-            self.add_sec(time_interval.value * time_interval.SECVAL)
-        elif isinstance(time_interval, Tcalendar_time.Day):
-            self.cal += time_interval.value
-        elif isinstance(time_interval, Tcalendar_time.Week):
-            self.cal += (time_interval.value * time_interval.dc)
-        elif isinstance(time_interval, Tcalendar_time.Month):
-            self.cal += (time_interval.value * time_interval.dc)
-        elif isinstance(time_interval, Tcalendar_time.Year):
-            self.cal += (time_interval.value * time_interval.dc)
+            dt1 = self.to_datetime()
+            dt2 = _o.to_datetime()
+            diff = int((dt2 - dt1).total_seconds())
+            h_res = diff // (60 * 60)
+            m_res = (diff // 60) - (h_res * 60)
+            s_res = diff - (m_res * 60) - (h_res * 60 * 60)
+            try:
+                return self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res), self._Sign(False)
+            except TypeError:
+                diff = abs(int((dt2 - dt1).total_seconds()))
+                h_res = diff // (60 * 60)
+                m_res = (diff // 60) - (h_res * 60)
+                s_res = diff - (m_res * 60) - (h_res * 60 * 60)
+                return self.Hour(h_res), self.Minute(m_res), self.Seconds(s_res), self._Sign()
 
-    def sub(self, time_interval):
-        if isinstance(time_interval, Tcalendar_time.Seconds):
-            self.sub_sec(time_interval.value)
-        elif isinstance(time_interval, Tcalendar_time.Minute):
-            self.sub_sec(time_interval.value * time_interval.SECVAL)
-        elif isinstance(time_interval, Tcalendar_time.Hour):
-            self.sub_sec(time_interval.value * time_interval.SECVAL)
-        elif isinstance(time_interval, Tcalendar_time.Day):
-            self.cal -= time_interval.value
-        elif isinstance(time_interval, Tcalendar_time.Week):
-            self.cal -= (time_interval.value * time_interval.dc)
-        elif isinstance(time_interval, Tcalendar_time.Month):
-            self.cal -= (time_interval.value * time_interval.dc)
-        elif isinstance(time_interval, Tcalendar_time.Year):
-            self.cal -= (time_interval.value * time_interval.dc)
+    def add(self, *, second: int = 0, minute: int = 0, hour: int = 0, day: int = 0, week: int = 0, month: int = 0, year: int = 0):
+        h, m, s = self.Hour(hour), self.Minute(minute), self.Seconds(second)
+        y, mo, w, d = self.Year(year), self.Month(month), self.Week(week), self.Day(day)
+        dt = self.to_datetime()
+        dt += timedelta(hours=h.value, minutes=m.value, seconds=s.value)
+        dt += relativedelta(year=y.value, month=mo.value, weeks=w.value, days=d.value)
+        self.cal = Tcalendar(dt.year, dt.month, dt.day)
+        self.ti = Ttime(dt.hour, dt.minute, dt.second)
+
+    def sub(self, *, second: int = 0, minute: int = 0, hour: int = 0, day: int = 0, week: int = 0, month: int = 0, year: int = 0):
+        h, m, s = self.Hour(hour), self.Minute(minute), self.Seconds(second)
+        y, mo, w, d = self.Year(year), self.Month(month), self.Week(week), self.Day(day)
+        dt = self.to_datetime()
+        dt -= timedelta(hours=h.value, minutes=m.value, seconds=s.value)
+        dt -= relativedelta(year=y.value, month=mo.value, weeks=w.value, days=d.value)
+        self.cal = Tcalendar(dt.year, dt.month, dt.day)
+        self.ti = Ttime(dt.hour, dt.minute, dt.second)
 
     def to_datetime(tct: "Tcalendar_time") -> datetime:
         h, m, s = tct.ti.hour, tct.ti.minute, tct.ti.second
         return datetime(tct.cal.year, tct.cal.month, tct.cal.date, h, m, s)
+
+    def from_datetime(dt: datetime) -> "Tcalendar_time":
+        return Tcalendar_time(
+            Tcalendar(dt.year, dt.month, dt.day),
+            Ttime(dt.hour, dt.minute, dt.second)
+        )
